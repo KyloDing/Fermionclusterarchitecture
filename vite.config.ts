@@ -49,7 +49,7 @@
         '@': path.resolve(__dirname, './src'),
       },
     },
-    base: '/Fermionclusterarchitecture/'
+    base: '/Fermionclusterarchitecture/',
     build: {
       target: 'esnext',
       outDir: 'build',
