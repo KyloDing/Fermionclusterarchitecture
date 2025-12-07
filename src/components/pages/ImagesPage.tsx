@@ -1,10 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Badge } from '../ui/badge';
-import { Skeleton } from '../ui/skeleton';
 import {
   Dialog,
   DialogContent,
@@ -36,231 +35,216 @@ import {
   Search,
   MoreVertical,
   Container,
-  Shield,
   Download,
   Trash2,
   Copy,
   CheckCircle2,
   AlertCircle,
-  Star,
   Clock,
   HardDrive,
   Tag,
-  FileCode,
-  Terminal,
   Cpu,
   Server,
-  Layers,
   Package,
   Info,
   RefreshCw,
+  Loader2,
+  Hammer,
+  FolderGit2,
+  FileCode2,
 } from 'lucide-react';
-import {
-  getContainerImages,
-  formatBytes,
-  formatRelativeTime,
-  type ContainerImage,
-} from '../../services/mockDataService';
+import { toast } from 'sonner@2.0.3';
+
+// 镜像类型定义
+interface ContainerImage {
+  id?: string;
+  registryName: string; // 仓库名称
+  status: 'AVAILABLE' | 'SYNC_ING' | 'BUILD_ING'; // 状态
+  fullName: string; // 全称
+  project: string; // 镜像工程项目名称
+  name: string; // 镜像名称
+  tag: string; // 标签
+  digest: string; // 镜像版本（SHA256）
+  abbreviation: string; // 简称
+  description: string; // 描述
+  fileSize: string; // 文件大小
+  architecture: string; // 架构
+  createdAt?: string;
+  updatedAt?: string;
+}
 
 export default function ImagesPage() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterCategory, setFilterCategory] = useState<string>('all');
-  const [filterFramework, setFilterFramework] = useState<string>('all');
+  const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [filterArchitecture, setFilterArchitecture] = useState<string>('all');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isImageDetailDialogOpen, setIsImageDetailDialogOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<ContainerImage | null>(null);
   const [activeTab, setActiveTab] = useState('all');
-  const [loading, setLoading] = useState(true);
 
   // 自定义镜像表单状态
   const [customImage, setCustomImage] = useState({
+    registryName: '',
     name: '',
     tag: 'latest',
-    registry: 'docker.io',
+    project: '',
     description: '',
     dockerfile: '',
-    buildMethod: 'dockerfile',
+    buildMethod: 'registry',
   });
 
-  // 模拟镜像数据
+  // 模拟镜像数据 - 根据新的数据结构
   const [images, setImages] = useState<ContainerImage[]>([
     {
       id: 'img-001',
-      name: 'pytorch',
-      tag: '2.1.0-cuda12.1-cudnn8-runtime',
-      category: 'official',
-      framework: 'PyTorch',
-      size: 8500,
-      pulls: 15234,
-      createdAt: '2024-10-15',
-      updatedAt: '2024-11-01',
-      description: 'PyTorch 2.1.0 官方镜像，包含 CUDA 12.1 和 cuDNN 8，适用于深度学习训练和推理',
-      featured: true,
-      verified: true,
-      gpuSupport: true,
-      cudaVersion: '12.1',
-      pythonVersion: '3.10',
-      frameworks: ['PyTorch 2.1.0', 'torchvision', 'torchaudio'],
-      includesJupyter: false,
-      registry: 'docker.io',
+      registryName: 'harbor156',
+      status: 'AVAILABLE',
+      fullName: '192.168.100.156/attendance/attendance-server:1.0',
+      project: 'attendance',
+      name: 'attendance-server',
+      tag: '1.0',
+      digest: 'sha256:e2ea90600b7b622d78e71027317a863e431130631aaf2c24a2396af3bca9e323',
+      abbreviation: 'attendance-server',
+      description: '考勤服务后端应用镜像，包含完整的业务逻辑和API接口',
+      fileSize: '240 MB',
+      architecture: 'amd64',
+      createdAt: '2024-11-15',
+      updatedAt: '2024-11-20',
     },
     {
       id: 'img-002',
-      name: 'tensorflow',
-      tag: '2.14.0-gpu',
-      category: 'official',
-      framework: 'TensorFlow',
-      size: 7200,
-      pulls: 12456,
-      createdAt: '2024-10-10',
-      updatedAt: '2024-10-28',
-      description: 'TensorFlow 2.14.0 GPU 版本，内置 Keras，支持分布式训练',
-      featured: true,
-      verified: true,
-      gpuSupport: true,
-      cudaVersion: '11.8',
-      pythonVersion: '3.11',
-      frameworks: ['TensorFlow 2.14.0', 'Keras'],
-      includesJupyter: false,
-      registry: 'docker.io',
+      registryName: 'harbor156',
+      status: 'AVAILABLE',
+      fullName: '192.168.100.156/ml-platform/pytorch-training:2.1.0-cuda12.1',
+      project: 'ml-platform',
+      name: 'pytorch-training',
+      tag: '2.1.0-cuda12.1',
+      digest: 'sha256:a3f5c8901234567890abcdef1234567890abcdef1234567890abcdef12345678',
+      abbreviation: 'pytorch-training',
+      description: 'PyTorch 2.1.0 深度学习训练环境，支持CUDA 12.1和cuDNN 8',
+      fileSize: '8.5 GB',
+      architecture: 'amd64',
+      createdAt: '2024-11-10',
+      updatedAt: '2024-11-18',
     },
     {
       id: 'img-003',
-      name: 'jupyter-pytorch-notebook',
-      tag: 'latest',
-      category: 'official',
-      framework: 'PyTorch',
-      size: 9800,
-      pulls: 8934,
-      createdAt: '2024-11-01',
-      updatedAt: '2024-11-08',
-      description: 'Jupyter Notebook 环境，预装 PyTorch、NumPy、Pandas、Matplotlib 等常用库',
-      featured: true,
-      verified: true,
-      gpuSupport: true,
-      cudaVersion: '12.1',
-      pythonVersion: '3.11',
-      frameworks: ['PyTorch 2.1.0', 'Jupyter Lab'],
-      includesJupyter: true,
-      registry: 'fermi-registry.io',
+      registryName: 'harbor156',
+      status: 'SYNC_ING',
+      fullName: '192.168.100.156/ml-platform/tensorflow-gpu:2.14.0',
+      project: 'ml-platform',
+      name: 'tensorflow-gpu',
+      tag: '2.14.0',
+      digest: 'sha256:b4e6d9012345678901bcdef1234567890bcdef1234567890bcdef1234567890',
+      abbreviation: 'tensorflow-gpu',
+      description: 'TensorFlow 2.14.0 GPU版本，内置Keras，支持分布式训练',
+      fileSize: '7.2 GB',
+      architecture: 'amd64',
+      createdAt: '2024-11-12',
+      updatedAt: '2024-11-19',
     },
     {
       id: 'img-004',
-      name: 'triton-inference-server',
-      tag: '23.10-py3',
-      category: 'official',
-      framework: 'Triton',
-      size: 12300,
-      pulls: 5678,
-      createdAt: '2024-10-20',
-      updatedAt: '2024-11-05',
-      description: 'NVIDIA Triton 推理服务器，支持 TensorRT、PyTorch、TensorFlow 等多种后端',
-      featured: true,
-      verified: true,
-      gpuSupport: true,
-      cudaVersion: '12.2',
-      pythonVersion: '3.10',
-      frameworks: ['Triton Server', 'TensorRT', 'ONNX'],
-      includesJupyter: false,
-      registry: 'nvcr.io',
+      registryName: 'harbor156',
+      status: 'BUILD_ING',
+      fullName: '192.168.100.156/custom/llama-finetune:latest',
+      project: 'custom',
+      name: 'llama-finetune',
+      tag: 'latest',
+      digest: 'sha256:c5f7e9012345678901cdef1234567890cdef1234567890cdef12345678901234',
+      abbreviation: 'llama-finetune',
+      description: 'LLaMA模型微调环境，包含LoRA、QLoRA、DeepSpeed等工具',
+      fileSize: '13.2 GB',
+      architecture: 'amd64',
+      createdAt: '2024-11-20',
+      updatedAt: '2024-11-20',
     },
     {
       id: 'img-005',
-      name: 'vllm-openai',
-      tag: 'v0.2.1',
-      category: 'official',
-      framework: 'vLLM',
-      size: 11500,
-      pulls: 4521,
-      createdAt: '2024-11-01',
-      updatedAt: '2024-11-09',
-      description: 'vLLM 高性能 LLM 推理引擎，兼容 OpenAI API 接口',
-      featured: true,
-      verified: true,
-      gpuSupport: true,
-      cudaVersion: '12.1',
-      pythonVersion: '3.11',
-      frameworks: ['vLLM', 'FastAPI'],
-      includesJupyter: false,
-      registry: 'docker.io',
+      registryName: 'harbor156',
+      status: 'AVAILABLE',
+      fullName: '192.168.100.156/inference/triton-server:23.10',
+      project: 'inference',
+      name: 'triton-server',
+      tag: '23.10',
+      digest: 'sha256:d6g8f9012345678901def1234567890def1234567890def12345678901234567',
+      abbreviation: 'triton-server',
+      description: 'NVIDIA Triton推理服务器，支持多种模型框架',
+      fileSize: '12.3 GB',
+      architecture: 'amd64',
+      createdAt: '2024-11-08',
+      updatedAt: '2024-11-16',
     },
     {
       id: 'img-006',
-      name: 'custom-llama-finetune',
-      tag: 'v1.0',
-      category: 'custom',
-      framework: 'PyTorch',
-      size: 13200,
-      pulls: 156,
+      registryName: 'harbor156',
+      status: 'AVAILABLE',
+      fullName: '192.168.100.156/data-science/jupyter-notebook:latest',
+      project: 'data-science',
+      name: 'jupyter-notebook',
+      tag: 'latest',
+      digest: 'sha256:e7h9g0012345678901ef1234567890ef1234567890ef123456789012345678',
+      abbreviation: 'jupyter-notebook',
+      description: 'Jupyter Notebook数据科学环境，预装常用Python库',
+      fileSize: '5.8 GB',
+      architecture: 'amd64',
       createdAt: '2024-11-05',
-      updatedAt: '2024-11-08',
-      description: '自定义 LLaMA 微调环境，包含 LoRA、QLoRA、DeepSpeed 等工具',
-      featured: false,
-      verified: false,
-      gpuSupport: true,
-      cudaVersion: '12.1',
-      pythonVersion: '3.10',
-      frameworks: ['PyTorch 2.1.0', 'transformers', 'peft', 'DeepSpeed'],
-      includesJupyter: true,
-      registry: 'fermi-registry.io/user123',
+      updatedAt: '2024-11-17',
     },
     {
       id: 'img-007',
-      name: 'rapids-ml',
-      tag: '23.10',
-      category: 'community',
-      framework: 'RAPIDS',
-      size: 15600,
-      pulls: 2341,
-      createdAt: '2024-10-25',
-      updatedAt: '2024-11-03',
-      description: 'NVIDIA RAPIDS GPU 加速数据科学库，包含 cuDF、cuML、cuGraph',
-      featured: false,
-      verified: true,
-      gpuSupport: true,
-      cudaVersion: '11.8',
-      pythonVersion: '3.10',
-      frameworks: ['RAPIDS', 'cuDF', 'cuML', 'Dask'],
-      includesJupyter: true,
-      registry: 'nvcr.io',
+      registryName: 'harbor156',
+      status: 'AVAILABLE',
+      fullName: '192.168.100.156/web/nginx-proxy:1.25.3',
+      project: 'web',
+      name: 'nginx-proxy',
+      tag: '1.25.3',
+      digest: 'sha256:f8i0h1012345678901fg1234567890fg1234567890fg123456789012345678',
+      abbreviation: 'nginx-proxy',
+      description: 'Nginx反向代理服务器，用于负载均衡和API网关',
+      fileSize: '145 MB',
+      architecture: 'amd64',
+      createdAt: '2024-11-01',
+      updatedAt: '2024-11-14',
     },
     {
       id: 'img-008',
-      name: 'stable-diffusion-webui',
-      tag: 'latest',
-      category: 'community',
-      framework: 'Stable Diffusion',
-      size: 18900,
-      pulls: 6789,
-      createdAt: '2024-10-18',
-      updatedAt: '2024-11-07',
-      description: 'Stable Diffusion WebUI，包含 ControlNet、LoRA、各种扩展插件',
-      featured: false,
-      verified: false,
-      gpuSupport: true,
-      cudaVersion: '11.8',
-      pythonVersion: '3.10',
-      frameworks: ['Stable Diffusion', 'gradio'],
-      includesJupyter: false,
-      registry: 'docker.io',
+      registryName: 'harbor156',
+      status: 'AVAILABLE',
+      fullName: '192.168.100.156/database/postgres-ha:15.4',
+      project: 'database',
+      name: 'postgres-ha',
+      tag: '15.4',
+      digest: 'sha256:g9j1i2012345678901gh1234567890gh1234567890gh123456789012345678',
+      abbreviation: 'postgres-ha',
+      description: 'PostgreSQL 15.4高可用版本，支持主从复制',
+      fileSize: '380 MB',
+      architecture: 'amd64',
+      createdAt: '2024-10-28',
+      updatedAt: '2024-11-12',
     },
   ]);
 
-  // 获取类别徽章
-  const getCategoryBadge = (category: ContainerImage['category']) => {
-    switch (category) {
-      case 'official':
-        return (
-          <Badge className="bg-blue-600">
-            <Shield className="w-3 h-3 mr-1" />
-            官方镜像
-          </Badge>
-        );
-      case 'custom':
-        return <Badge variant="outline">自定义</Badge>;
-      case 'community':
-        return <Badge className="bg-purple-600">社区</Badge>;
-    }
+  // 获取状态配置
+  const getStatusConfig = (status: ContainerImage['status']) => {
+    const configs = {
+      AVAILABLE: {
+        label: '可用',
+        color: 'bg-green-100 text-green-700 border-green-200',
+        icon: CheckCircle2,
+      },
+      SYNC_ING: {
+        label: '同步中',
+        color: 'bg-blue-100 text-blue-700 border-blue-200',
+        icon: RefreshCw,
+      },
+      BUILD_ING: {
+        label: '构建中',
+        color: 'bg-orange-100 text-orange-700 border-orange-200',
+        icon: Hammer,
+      },
+    };
+    return configs[status];
   };
 
   // 筛选镜像
@@ -268,26 +252,43 @@ export default function ImagesPage() {
     const matchesSearch =
       image.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       image.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      image.project.toLowerCase().includes(searchTerm.toLowerCase()) ||
       image.tag.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory =
-      filterCategory === 'all' || image.category === filterCategory;
-    const matchesFramework =
-      filterFramework === 'all' || image.framework === filterFramework;
+    const matchesStatus = filterStatus === 'all' || image.status === filterStatus;
+    const matchesArchitecture =
+      filterArchitecture === 'all' || image.architecture === filterArchitecture;
     const matchesTab =
       activeTab === 'all' ||
-      (activeTab === 'featured' && image.featured) ||
-      (activeTab === 'official' && image.category === 'official') ||
-      (activeTab === 'custom' && image.category === 'custom');
+      (activeTab === 'available' && image.status === 'AVAILABLE') ||
+      (activeTab === 'building' &&
+        (image.status === 'BUILD_ING' || image.status === 'SYNC_ING'));
 
-    return matchesSearch && matchesCategory && matchesFramework && matchesTab;
+    return matchesSearch && matchesStatus && matchesArchitecture && matchesTab;
   });
 
   // 统计信息
   const stats = {
     total: images.length,
-    official: images.filter((i) => i.category === 'official').length,
-    custom: images.filter((i) => i.category === 'custom').length,
-    featured: images.filter((i) => i.featured).length,
+    available: images.filter((i) => i.status === 'AVAILABLE').length,
+    syncing: images.filter((i) => i.status === 'SYNC_ING').length,
+    building: images.filter((i) => i.status === 'BUILD_ING').length,
+  };
+
+  // 处理复制
+  const handleCopy = (text: string, label: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success(`${label}已复制到剪贴板`);
+  };
+
+  // 处理拉取镜像
+  const handlePullImage = (image: ContainerImage) => {
+    toast.success(`开始拉取镜像: ${image.fullName}`);
+  };
+
+  // 处理删除镜像
+  const handleDeleteImage = (image: ContainerImage) => {
+    toast.success(`镜像 ${image.name} 已删除`);
+    setImages(images.filter((img) => img.id !== image.id));
   };
 
   return (
@@ -296,7 +297,7 @@ export default function ImagesPage() {
       <div>
         <h1 className="text-3xl mb-2">镜像管理</h1>
         <p className="text-slate-600">
-          管理容器镜像环境，使用平台内置镜像或构建自定义镜像
+          管理容器镜像仓库，查看、拉取和构建容器镜像
         </p>
       </div>
 
@@ -306,10 +307,10 @@ export default function ImagesPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600 mb-1">总镜像数</p>
+                <p className="text-sm text-slate-600 mb-1">镜像总数</p>
                 <p className="text-3xl">{stats.total}</p>
               </div>
-              <Container className="w-10 h-10 text-blue-600" />
+              <Container className="w-10 h-10 text-purple-600" />
             </div>
           </CardContent>
         </Card>
@@ -318,10 +319,10 @@ export default function ImagesPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600 mb-1">官方镜像</p>
-                <p className="text-3xl text-blue-600">{stats.official}</p>
+                <p className="text-sm text-slate-600 mb-1">可用镜像</p>
+                <p className="text-3xl text-green-600">{stats.available}</p>
               </div>
-              <Shield className="w-10 h-10 text-blue-600" />
+              <CheckCircle2 className="w-10 h-10 text-green-600" />
             </div>
           </CardContent>
         </Card>
@@ -330,10 +331,10 @@ export default function ImagesPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600 mb-1">自定义镜像</p>
-                <p className="text-3xl text-purple-600">{stats.custom}</p>
+                <p className="text-sm text-slate-600 mb-1">同步中</p>
+                <p className="text-3xl text-blue-600">{stats.syncing}</p>
               </div>
-              <Package className="w-10 h-10 text-purple-600" />
+              <RefreshCw className="w-10 h-10 text-blue-600" />
             </div>
           </CardContent>
         </Card>
@@ -342,10 +343,10 @@ export default function ImagesPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600 mb-1">精选镜像</p>
-                <p className="text-3xl text-orange-600">{stats.featured}</p>
+                <p className="text-sm text-slate-600 mb-1">构建中</p>
+                <p className="text-3xl text-orange-600">{stats.building}</p>
               </div>
-              <Star className="w-10 h-10 text-orange-600" />
+              <Hammer className="w-10 h-10 text-orange-600" />
             </div>
           </CardContent>
         </Card>
@@ -356,15 +357,14 @@ export default function ImagesPage() {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-auto">
           <TabsList>
             <TabsTrigger value="all">全部</TabsTrigger>
-            <TabsTrigger value="featured">精选</TabsTrigger>
-            <TabsTrigger value="official">官方</TabsTrigger>
-            <TabsTrigger value="custom">我的自定义</TabsTrigger>
+            <TabsTrigger value="available">可用</TabsTrigger>
+            <TabsTrigger value="building">构建/同步中</TabsTrigger>
           </TabsList>
         </Tabs>
 
         <Button onClick={() => setIsCreateDialogOpen(true)} size="lg">
           <Plus className="w-4 h-4 mr-2" />
-          添加自定义镜像
+          添加镜像
         </Button>
       </div>
 
@@ -373,153 +373,204 @@ export default function ImagesPage() {
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
           <Input
-            placeholder="搜索镜像名称、标签或描述..."
+            placeholder="搜索镜像名称、项目、标签或描述..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"
           />
         </div>
 
-        <Select value={filterFramework} onValueChange={setFilterFramework}>
-          <SelectTrigger className="w-48">
+        <Select value={filterStatus} onValueChange={setFilterStatus}>
+          <SelectTrigger className="w-40">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">全部框架</SelectItem>
-            <SelectItem value="PyTorch">PyTorch</SelectItem>
-            <SelectItem value="TensorFlow">TensorFlow</SelectItem>
-            <SelectItem value="Triton">Triton</SelectItem>
-            <SelectItem value="vLLM">vLLM</SelectItem>
-            <SelectItem value="RAPIDS">RAPIDS</SelectItem>
+            <SelectItem value="all">全部状态</SelectItem>
+            <SelectItem value="AVAILABLE">可用</SelectItem>
+            <SelectItem value="SYNC_ING">同步中</SelectItem>
+            <SelectItem value="BUILD_ING">构建中</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Select value={filterArchitecture} onValueChange={setFilterArchitecture}>
+          <SelectTrigger className="w-40">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">全部架构</SelectItem>
+            <SelectItem value="amd64">amd64</SelectItem>
+            <SelectItem value="arm64">arm64</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       {/* 镜像列表 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-        {filteredImages.map((image) => (
-          <Card
-            key={image.id}
-            className="border-2 hover:shadow-lg transition-shadow cursor-pointer"
-            onClick={() => {
-              setSelectedImage(image);
-              setIsImageDetailDialogOpen(true);
-            }}
-          >
-            <CardHeader>
-              <div className="flex items-start justify-between mb-2">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <CardTitle className="text-lg">{image.name}</CardTitle>
-                    {image.featured && <Star className="w-4 h-4 text-orange-500 fill-orange-500" />}
-                    {image.verified && <CheckCircle2 className="w-4 h-4 text-blue-500" />}
+      <div className="space-y-4">
+        {filteredImages.map((image) => {
+          const statusConfig = getStatusConfig(image.status);
+          const StatusIcon = statusConfig.icon;
+
+          return (
+            <Card
+              key={image.id}
+              className="border-2 hover:shadow-lg transition-shadow"
+            >
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <FolderGit2 className="w-5 h-5 text-slate-600" />
+                      <CardTitle className="text-lg">{image.name}</CardTitle>
+                      <Badge variant="outline" className={statusConfig.color}>
+                        <StatusIcon
+                          className={`w-3 h-3 mr-1 ${
+                            image.status === 'SYNC_ING' || image.status === 'BUILD_ING'
+                              ? 'animate-spin'
+                              : ''
+                          }`}
+                        />
+                        {statusConfig.label}
+                      </Badge>
+                      <Badge variant="outline" className="font-mono text-xs">
+                        <Tag className="w-3 h-3 mr-1" />
+                        {image.tag}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center gap-4 text-sm text-slate-600">
+                      <span className="flex items-center gap-1">
+                        <Server className="w-4 h-4" />
+                        {image.registryName}
+                      </span>
+                      <span>•</span>
+                      <span className="flex items-center gap-1">
+                        <Package className="w-4 h-4" />
+                        {image.project}
+                      </span>
+                      <span>•</span>
+                      <span className="flex items-center gap-1">
+                        <Cpu className="w-4 h-4" />
+                        {image.architecture}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    {getCategoryBadge(image.category)}
-                    <Badge variant="outline" className="font-mono text-xs">
-                      {image.tag}
-                    </Badge>
-                  </div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon">
+                        <MoreVertical className="w-4 h-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        onClick={() => handlePullImage(image)}
+                        disabled={image.status !== 'AVAILABLE'}
+                      >
+                        <Download className="w-4 h-4 mr-2" />
+                        拉取镜像
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => handleCopy(image.fullName, '镜像地址')}
+                      >
+                        <Copy className="w-4 h-4 mr-2" />
+                        复制完整地址
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => handleCopy(image.digest, 'Digest')}
+                      >
+                        <Copy className="w-4 h-4 mr-2" />
+                        复制Digest
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => {
+                          setSelectedImage(image);
+                          setIsImageDetailDialogOpen(true);
+                        }}
+                      >
+                        <Info className="w-4 h-4 mr-2" />
+                        查看详情
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        className="text-red-600"
+                        onClick={() => handleDeleteImage(image)}
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        删除镜像
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                    <Button variant="ghost" size="icon">
-                      <MoreVertical className="w-4 h-4" />
+                <CardDescription className="mt-2">{image.description}</CardDescription>
+              </CardHeader>
+
+              <CardContent className="space-y-4">
+                {/* 完整地址 */}
+                <div className="p-3 bg-slate-900 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <code className="text-sm text-green-400 font-mono">
+                      {image.fullName}
+                    </code>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-slate-400 hover:text-white h-8"
+                      onClick={() => handleCopy(image.fullName, '镜像地址')}
+                    >
+                      <Copy className="w-4 h-4" />
                     </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem>
-                      <Download className="w-4 h-4 mr-2" />
-                      拉取镜像
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Copy className="w-4 h-4 mr-2" />
-                      复制标签
-                    </DropdownMenuItem>
-                    {image.category === 'custom' && (
-                      <>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-red-600">
-                          <Trash2 className="w-4 h-4 mr-2" />
-                          删除镜像
-                        </DropdownMenuItem>
-                      </>
-                    )}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-              <CardDescription className="line-clamp-2 min-h-[2.5rem]">
-                {image.description}
-              </CardDescription>
-            </CardHeader>
+                  </div>
+                </div>
 
-            <CardContent className="space-y-4">
-              {/* 框架标签 */}
-              {image.frameworks && image.frameworks.length > 0 && (
-                <div className="flex flex-wrap gap-1.5">
-                  {image.frameworks.slice(0, 3).map((fw) => (
-                    <Badge key={fw} variant="outline" className="text-xs bg-slate-50">
-                      {fw}
-                    </Badge>
-                  ))}
-                  {image.frameworks.length > 3 && (
-                    <Badge variant="outline" className="text-xs bg-slate-50">
-                      +{image.frameworks.length - 3}
-                    </Badge>
-                  )}
+                {/* 元数据 */}
+                <div className="grid grid-cols-4 gap-4 p-4 bg-slate-50 rounded-lg">
+                  <div>
+                    <p className="text-xs text-slate-600 mb-1">文件大小</p>
+                    <div className="flex items-center gap-1.5">
+                      <HardDrive className="w-4 h-4 text-purple-600" />
+                      <p className="font-medium">{image.fileSize}</p>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-600 mb-1">架构</p>
+                    <div className="flex items-center gap-1.5">
+                      <Cpu className="w-4 h-4 text-blue-600" />
+                      <p className="font-medium">{image.architecture}</p>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-600 mb-1">创建时间</p>
+                    <div className="flex items-center gap-1.5">
+                      <Clock className="w-4 h-4 text-green-600" />
+                      <p className="font-medium text-sm">{image.createdAt}</p>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-600 mb-1">最后更新</p>
+                    <div className="flex items-center gap-1.5">
+                      <Clock className="w-4 h-4 text-orange-600" />
+                      <p className="font-medium text-sm">{image.updatedAt}</p>
+                    </div>
+                  </div>
                 </div>
-              )}
 
-              {/* 规格信息 */}
-              <div className="grid grid-cols-2 gap-3 p-3 bg-slate-50 rounded-lg text-sm">
-                <div className="flex items-center gap-2">
-                  <Cpu className="w-4 h-4 text-green-600" />
-                  <div>
-                    <p className="text-xs text-slate-600">GPU支持</p>
-                    <p className="font-medium">
-                      {image.gpuSupport ? `CUDA ${image.cudaVersion}` : '仅CPU'}
-                    </p>
+                {/* Digest */}
+                <div className="pt-3 border-t">
+                  <p className="text-xs text-slate-600 mb-2">Digest</p>
+                  <div className="flex items-center justify-between p-2 bg-slate-50 rounded font-mono text-xs">
+                    <span className="text-slate-700">{image.digest}</span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6"
+                      onClick={() => handleCopy(image.digest, 'Digest')}
+                    >
+                      <Copy className="w-3 h-3" />
+                    </Button>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <FileCode className="w-4 h-4 text-blue-600" />
-                  <div>
-                    <p className="text-xs text-slate-600">Python</p>
-                    <p className="font-medium">{image.pythonVersion}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <HardDrive className="w-4 h-4 text-purple-600" />
-                  <div>
-                    <p className="text-xs text-slate-600">镜像大小</p>
-                    <p className="font-medium">{(image.size / 1024).toFixed(1)} GB</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Download className="w-4 h-4 text-orange-600" />
-                  <div>
-                    <p className="text-xs text-slate-600">拉取次数</p>
-                    <p className="font-medium">{image.pulls.toLocaleString()}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* 底部信息 */}
-              <div className="flex items-center justify-between pt-3 border-t text-xs text-slate-600">
-                <div className="flex items-center gap-1.5">
-                  <Clock className="w-3.5 h-3.5" />
-                  <span>更新于 {image.updatedAt}</span>
-                </div>
-                {image.includesJupyter && (
-                  <Badge variant="outline" className="text-xs">
-                    <Terminal className="w-3 h-3 mr-1" />
-                    Jupyter
-                  </Badge>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
       {filteredImages.length === 0 && (
@@ -528,53 +579,61 @@ export default function ImagesPage() {
             <Container className="w-16 h-16 mx-auto text-slate-300" />
             <div>
               <h3 className="text-xl mb-2">没有找到镜像</h3>
-              <p className="text-slate-600">调整筛选条件或添加自定义镜像</p>
+              <p className="text-slate-600">调整筛选条件或添加新镜像</p>
             </div>
           </div>
         </Card>
       )}
 
-      {/* 添加自定义镜像对话框 */}
+      {/* 添加镜像对话框 */}
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
         <DialogContent className="max-w-[700px]">
           <DialogHeader>
-            <DialogTitle className="text-2xl">添加自定义镜像</DialogTitle>
-            <DialogDescription>从镜像仓库添加或通过 Dockerfile 构建</DialogDescription>
+            <DialogTitle className="text-2xl">添加镜像</DialogTitle>
+            <DialogDescription>从镜像仓库拉取或通过 Dockerfile 构建新镜像</DialogDescription>
           </DialogHeader>
 
           <Tabs defaultValue="registry" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="registry">从仓库添加</TabsTrigger>
+              <TabsTrigger value="registry">从仓库拉取</TabsTrigger>
               <TabsTrigger value="dockerfile">Dockerfile 构建</TabsTrigger>
             </TabsList>
 
-            {/* 从仓库添加 */}
+            {/* 从仓库拉取 */}
             <TabsContent value="registry" className="space-y-4 mt-6">
               <div className="space-y-2">
-                <Label htmlFor="registry">镜像仓库</Label>
-                <Select
-                  value={customImage.registry}
-                  onValueChange={(value) => setCustomImage({ ...customImage, registry: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="docker.io">Docker Hub (docker.io)</SelectItem>
-                    <SelectItem value="nvcr.io">NVIDIA NGC (nvcr.io)</SelectItem>
-                    <SelectItem value="fermi-registry.io">费米私有仓库</SelectItem>
-                    <SelectItem value="custom">自定义仓库地址</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label htmlFor="registry">镜像仓库 *</Label>
+                <Input
+                  id="registry"
+                  placeholder="例如: harbor156"
+                  value={customImage.registryName}
+                  onChange={(e) =>
+                    setCustomImage({ ...customImage, registryName: e.target.value })
+                  }
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="project">项目名称 *</Label>
+                <Input
+                  id="project"
+                  placeholder="例如: ml-platform"
+                  value={customImage.project}
+                  onChange={(e) =>
+                    setCustomImage({ ...customImage, project: e.target.value })
+                  }
+                />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="image-name">镜像名称 *</Label>
                 <Input
                   id="image-name"
-                  placeholder="例如: pytorch/pytorch"
+                  placeholder="例如: pytorch-training"
                   value={customImage.name}
-                  onChange={(e) => setCustomImage({ ...customImage, name: e.target.value })}
+                  onChange={(e) =>
+                    setCustomImage({ ...customImage, name: e.target.value })
+                  }
                 />
               </div>
 
@@ -584,7 +643,9 @@ export default function ImagesPage() {
                   id="image-tag"
                   placeholder="latest"
                   value={customImage.tag}
-                  onChange={(e) => setCustomImage({ ...customImage, tag: e.target.value })}
+                  onChange={(e) =>
+                    setCustomImage({ ...customImage, tag: e.target.value })
+                  }
                 />
               </div>
 
@@ -594,7 +655,9 @@ export default function ImagesPage() {
                   id="image-desc"
                   placeholder="简要描述此镜像的用途和特性"
                   value={customImage.description}
-                  onChange={(e) => setCustomImage({ ...customImage, description: e.target.value })}
+                  onChange={(e) =>
+                    setCustomImage({ ...customImage, description: e.target.value })
+                  }
                   rows={3}
                 />
               </div>
@@ -602,7 +665,8 @@ export default function ImagesPage() {
               <Alert className="bg-blue-50 border-blue-200">
                 <Info className="w-4 h-4 text-blue-600" />
                 <AlertDescription className="text-blue-900 text-sm">
-                  完整镜像地址将是: {customImage.registry}/{customImage.name}:{customImage.tag}
+                  完整镜像地址: {customImage.registryName}/{customImage.project}/
+                  {customImage.name}:{customImage.tag}
                 </AlertDescription>
               </Alert>
             </TabsContent>
@@ -615,7 +679,21 @@ export default function ImagesPage() {
                   id="dockerfile-name"
                   placeholder="my-custom-image"
                   value={customImage.name}
-                  onChange={(e) => setCustomImage({ ...customImage, name: e.target.value })}
+                  onChange={(e) =>
+                    setCustomImage({ ...customImage, name: e.target.value })
+                  }
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="dockerfile-project">项目 *</Label>
+                <Input
+                  id="dockerfile-project"
+                  placeholder="custom"
+                  value={customImage.project}
+                  onChange={(e) =>
+                    setCustomImage({ ...customImage, project: e.target.value })
+                  }
                 />
               </div>
 
@@ -631,7 +709,9 @@ WORKDIR /workspace
 
 CMD ["/bin/bash"]`}
                   value={customImage.dockerfile}
-                  onChange={(e) => setCustomImage({ ...customImage, dockerfile: e.target.value })}
+                  onChange={(e) =>
+                    setCustomImage({ ...customImage, dockerfile: e.target.value })
+                  }
                   rows={12}
                   className="font-mono text-sm"
                 />
@@ -653,7 +733,7 @@ CMD ["/bin/bash"]`}
             <Button
               onClick={() => {
                 setIsCreateDialogOpen(false);
-                // TODO: 提交自定义镜像
+                toast.success('镜像添加请求已提交');
               }}
             >
               <CheckCircle2 className="w-4 h-4 mr-2" />
@@ -688,24 +768,37 @@ CMD ["/bin/bash"]`}
                         <p className="font-medium">{selectedImage.name}</p>
                       </div>
                       <div>
+                        <p className="text-xs text-slate-600 mb-1">简称</p>
+                        <p className="font-medium">{selectedImage.abbreviation}</p>
+                      </div>
+                      <div>
                         <p className="text-xs text-slate-600 mb-1">标签</p>
                         <p className="font-mono text-sm">{selectedImage.tag}</p>
                       </div>
                       <div>
-                        <p className="text-xs text-slate-600 mb-1">类别</p>
-                        {getCategoryBadge(selectedImage.category)}
+                        <p className="text-xs text-slate-600 mb-1">状态</p>
+                        <Badge
+                          variant="outline"
+                          className={getStatusConfig(selectedImage.status).color}
+                        >
+                          {getStatusConfig(selectedImage.status).label}
+                        </Badge>
                       </div>
                       <div>
-                        <p className="text-xs text-slate-600 mb-1">镜像仓库</p>
-                        <p className="font-mono text-sm">{selectedImage.registry}</p>
+                        <p className="text-xs text-slate-600 mb-1">仓库名称</p>
+                        <p className="font-medium">{selectedImage.registryName}</p>
                       </div>
                       <div>
-                        <p className="text-xs text-slate-600 mb-1">创建时间</p>
-                        <p>{selectedImage.createdAt}</p>
+                        <p className="text-xs text-slate-600 mb-1">项目</p>
+                        <p className="font-medium">{selectedImage.project}</p>
                       </div>
                       <div>
-                        <p className="text-xs text-slate-600 mb-1">最后更新</p>
-                        <p>{selectedImage.updatedAt}</p>
+                        <p className="text-xs text-slate-600 mb-1">架构</p>
+                        <p className="font-medium">{selectedImage.architecture}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-slate-600 mb-1">文件大小</p>
+                        <p className="font-medium">{selectedImage.fileSize}</p>
                       </div>
                     </div>
 
@@ -714,85 +807,68 @@ CMD ["/bin/bash"]`}
                       <p className="text-sm">{selectedImage.description}</p>
                     </div>
 
-                    <div className="p-3 bg-slate-900 rounded text-green-400 font-mono text-xs">
-                      docker pull {selectedImage.registry}/{selectedImage.name}:
-                      {selectedImage.tag}
+                    <div>
+                      <p className="text-xs text-slate-600 mb-2">完整地址</p>
+                      <div className="p-3 bg-slate-900 rounded text-green-400 font-mono text-sm break-all">
+                        {selectedImage.fullName}
+                      </div>
+                    </div>
+
+                    <div>
+                      <p className="text-xs text-slate-600 mb-2">Digest</p>
+                      <div className="p-3 bg-slate-50 rounded font-mono text-xs break-all text-slate-700">
+                        {selectedImage.digest}
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
 
-                {/* 环境信息 */}
+                {/* Docker命令 */}
                 <Card className="border-2">
                   <CardHeader>
-                    <CardTitle>环境规格</CardTitle>
+                    <CardTitle>Docker 命令</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="p-4 bg-green-50 rounded-lg">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Cpu className="w-5 h-5 text-green-600" />
-                          <p className="font-medium">GPU 支持</p>
-                        </div>
-                        <p className="text-sm">
-                          {selectedImage.gpuSupport
-                            ? `CUDA ${selectedImage.cudaVersion}`
-                            : '仅 CPU'}
-                        </p>
+                    <div>
+                      <p className="text-sm font-medium mb-2">拉取镜像</p>
+                      <div className="p-3 bg-slate-900 rounded">
+                        <code className="text-green-400 text-sm">
+                          docker pull {selectedImage.fullName}
+                        </code>
                       </div>
-                      <div className="p-4 bg-blue-50 rounded-lg">
-                        <div className="flex items-center gap-2 mb-2">
-                          <FileCode className="w-5 h-5 text-blue-600" />
-                          <p className="font-medium">Python 版本</p>
-                        </div>
-                        <p className="text-sm">{selectedImage.pythonVersion}</p>
-                      </div>
-                      <div className="p-4 bg-purple-50 rounded-lg">
-                        <div className="flex items-center gap-2 mb-2">
-                          <HardDrive className="w-5 h-5 text-purple-600" />
-                          <p className="font-medium">镜像大小</p>
-                        </div>
-                        <p className="text-sm">{(selectedImage.size / 1024).toFixed(2)} GB</p>
-                      </div>
-                      <div className="p-4 bg-orange-50 rounded-lg">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Download className="w-5 h-5 text-orange-600" />
-                          <p className="font-medium">拉取次数</p>
-                        </div>
-                        <p className="text-sm">{selectedImage.pulls.toLocaleString()}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium mb-2">运行容器</p>
+                      <div className="p-3 bg-slate-900 rounded">
+                        <code className="text-green-400 text-sm">
+                          docker run -it {selectedImage.fullName} /bin/bash
+                        </code>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
-
-                {/* 预装框架 */}
-                {selectedImage.frameworks && selectedImage.frameworks.length > 0 && (
-                  <Card className="border-2">
-                    <CardHeader>
-                      <CardTitle>预装框架和工具</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex flex-wrap gap-2">
-                        {selectedImage.frameworks.map((fw) => (
-                          <Badge key={fw} variant="outline" className="bg-slate-50">
-                            <Layers className="w-3 h-3 mr-1.5" />
-                            {fw}
-                          </Badge>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
               </div>
             )}
           </ScrollArea>
 
-          <DialogFooter className="pt-6 border-t">
-            <Button variant="outline" onClick={() => setIsImageDetailDialogOpen(false)}>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsImageDetailDialogOpen(false)}
+            >
               关闭
             </Button>
-            <Button>
+            <Button
+              onClick={() => {
+                if (selectedImage) {
+                  handlePullImage(selectedImage);
+                  setIsImageDetailDialogOpen(false);
+                }
+              }}
+              disabled={selectedImage?.status !== 'AVAILABLE'}
+            >
               <Download className="w-4 h-4 mr-2" />
-              使用此镜像
+              拉取镜像
             </Button>
           </DialogFooter>
         </DialogContent>

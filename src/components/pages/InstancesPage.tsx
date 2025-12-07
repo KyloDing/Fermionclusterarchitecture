@@ -76,7 +76,7 @@ interface Instance {
   command?: string;
 }
 
-export function InstancesPage() {
+export default function InstancesPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');

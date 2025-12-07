@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
@@ -14,6 +15,9 @@ import {
   Clock,
   MoreVertical,
   ExternalLink,
+  Globe,
+  ArrowLeft,
+  Shield,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -31,6 +35,7 @@ export default function SMBSharesPage() {
   const [loading, setLoading] = useState(true);
   const [visiblePasswords, setVisiblePasswords] = useState<Set<string>>(new Set());
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     loadShares();
@@ -88,10 +93,16 @@ export default function SMBSharesPage() {
   return (
     <div className="p-8">
       {/* Header */}
-      <div className="mb-8">
+      <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
           <div>
-            <h1 className="text-slate-900 mb-2">SMB分享管理</h1>
+            <div className="flex items-center gap-2 mb-2">
+              <h1 className="text-slate-900">SMB分享管理</h1>
+              <Badge className="bg-purple-100 text-purple-700">
+                <Shield className="w-3 h-3 mr-1" />
+                私有云部署
+              </Badge>
+            </div>
             <p className="text-slate-600">创建和管理SMB网络共享，支持Windows/Mac/Linux访问</p>
           </div>
           <Button onClick={() => setCreateDialogOpen(true)}>
@@ -100,6 +111,54 @@ export default function SMBSharesPage() {
           </Button>
         </div>
       </div>
+
+      {/* 部署场景说明 */}
+      <Card className="border-blue-200 bg-blue-50 mb-6">
+        <CardContent className="p-6">
+          <div className="flex items-start gap-3">
+            <ExternalLink className="w-5 h-5 text-blue-600 mt-0.5" />
+            <div className="flex-1">
+              <h3 className="font-medium text-blue-900 mb-2">部署场景说明</h3>
+              <div className="grid grid-cols-2 gap-4 text-sm text-blue-800">
+                <div className="flex items-start gap-2">
+                  <Shield className="w-4 h-4 mt-0.5" />
+                  <div>
+                    <p className="font-medium">SMB共享（当前）</p>
+                    <p className="text-blue-700">适用于私有云部署，基于SMB/CIFS协议，性能高，适合内网环境</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Globe className="w-4 h-4 mt-0.5" />
+                  <div>
+                    <p className="font-medium">WebDAV共享</p>
+                    <p className="text-blue-700">适用于公有云部署，基于HTTP/HTTPS协议，支持互联网访问</p>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-3 flex gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="bg-white"
+                  onClick={() => navigate('/webdav-shares')}
+                >
+                  <Globe className="w-4 h-4 mr-2" />
+                  切换到WebDAV
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="bg-white"
+                  onClick={() => navigate('/file-shares')}
+                >
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  返回共享中心
+                </Button>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* 统计卡片 */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">

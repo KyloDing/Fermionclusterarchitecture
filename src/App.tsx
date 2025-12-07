@@ -1,24 +1,24 @@
-import { useState } from 'react';
-import { HashRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
-import { SidebarProvider } from './components/ui/sidebar';
-import { TooltipProvider } from './components/ui/tooltip';
-import { Toaster } from './components/ui/sonner';
-// 费米集群系统 - 主应用入口
-import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { BrowserRouter, Routes, Route, useLocation, useNavigate, Navigate } from 'react-router-dom';
+import { useAuth, AuthProvider } from './contexts/AuthContext';
 import { TaskProvider } from './contexts/TaskContext';
-import AppSidebar from './components/AppSidebar';
 import LoginPage from './components/pages/LoginPage';
 import AuthCallbackPage from './components/pages/AuthCallbackPage';
+import AppSidebar from './components/AppSidebar';
 import DashboardPage from './components/pages/DashboardPage';
 import ClustersPage from './components/pages/ClustersPage';
 import ComputeNodesPage from './components/pages/ComputeNodesPage';
 import GpuPoolsPage from './components/pages/GpuPoolsPage';
-import { InstancesPage } from './components/pages/InstancesPage';
+import InstancesPage from './components/pages/InstancesPage';
 import TrainingJobsPage from './components/pages/TrainingJobsPage';
 import InferenceServicesPage from './components/pages/InferenceServicesPage';
-import ImagesPage from './components/pages/ImagesPageNew';
-import DatasetsPage from './components/pages/DatasetsPage';
+import ImagesPage from './components/pages/ImagesPage';
+import DatasetListPage from './pages/DatasetListPage.tsx';
+import DatasetDetailPage from './pages/DatasetDetailPage.tsx';
+import TrainingTaskCreatePage from './pages/TrainingTaskCreatePage.tsx';
 import ModelsPage from './components/pages/ModelsPage';
+import ModelEvaluationPage from './components/pages/ModelEvaluationPage';
+import PipelineOrchestrationPage from './components/pages/PipelineOrchestrationPage';
+import PipelineEditorPage from './components/pages/PipelineEditorPage';
 import SchedulingPage from './components/pages/SchedulingPage';
 import UsersPage from './components/pages/UsersPage';
 import UsersManagementPage from './components/pages/UsersManagementPage';
@@ -40,28 +40,34 @@ import GovernmentVouchersPage from './components/pages/GovernmentVouchersPage';
 import AuditLogsPage from './components/pages/AuditLogsPage';
 import StoragePoolsPage from './components/pages/StoragePoolsPage';
 import StorageVolumesPage from './components/pages/StorageVolumesPage';
+import StorageBackendsPage from './components/pages/StorageBackendsPage';
 import FileBrowserPage from './components/pages/FileBrowserPage';
 import SMBSharesPage from './components/pages/SMBSharesPage';
-import StorageBackendsPage from './components/pages/StorageBackendsPage';
-import DatasetListPage from './pages/DatasetListPage';
-import DatasetDetailPage from './pages/DatasetDetailPage';
-import TrainingTaskCreatePage from './pages/TrainingTaskCreatePage';
-import ModelEvaluationPage from './components/pages/ModelEvaluationPage';
-import PipelineOrchestrationPage from './components/pages/PipelineOrchestrationPage';
-import PipelineEditorPage from './components/pages/PipelineEditorPage';
 import TaskQueuesPage from './components/pages/TaskQueuesPage';
 import ComputeTasksPage from './components/pages/ComputeTasksPage';
 import TaskMonitoringPage from './components/pages/TaskMonitoringPage';
+import ProfilePage from './components/pages/ProfilePage';
+import DictionaryManagementPage from './components/pages/DictionaryManagementPage';
+import WebDAVSharesPage from './components/pages/WebDAVSharesPage';
+import FileSharesPage from './components/pages/FileSharesPage';
+import MyVerificationPage from './components/pages/MyVerificationPage';
+import VerificationManagementPage from './components/pages/VerificationManagementPage';
+import MultiZoneTaskDetailPage from './components/pages/MultiZoneTaskDetailPage';
+import PaymentTestPage from './components/pages/PaymentTestPage';
+import FlexiblePricingManagementPage from './components/pages/FlexiblePricingManagementPage';
+import { SidebarProvider } from './components/ui/sidebar';
+import { TooltipProvider } from './components/ui/tooltip';
+import { Toaster } from './components/ui/sonner';
 
 export default function App() {
   return (
-    <HashRouter>
+    <BrowserRouter>
       <AuthProvider>
         <TaskProvider>
           <AppContent />
         </TaskProvider>
       </AuthProvider>
-    </HashRouter>
+    </BrowserRouter>
   );
 }
 
@@ -167,6 +173,14 @@ function MainLayout() {
     if (path === '/compute-tasks') return 'compute-tasks';
     if (path.startsWith('/task-monitoring')) return 'compute-tasks';
     if (path.startsWith('/file-browser')) return 'file-browser';
+    if (path === '/profile') return 'profile';
+    if (path === '/dictionary-management') return 'dictionary-management';
+    if (path === '/webdav-shares') return 'webdav-shares';
+    if (path === '/file-shares') return 'file-shares';
+    if (path === '/my-verification') return 'my-verification';
+    if (path === '/verification-management') return 'verification-management';
+    if (path === '/multi-zone-task-detail') return 'multi-zone-task-detail';
+    if (path === '/payment-test') return 'payment-test';
     return 'dashboard';
   };
 
@@ -201,6 +215,14 @@ function MainLayout() {
       'smb-shares': '/smb-shares',
       'task-queues': '/task-queues',
       'compute-tasks': '/compute-tasks',
+      'profile': '/profile',
+      'dictionary-management': '/dictionary-management',
+      'webdav-shares': '/webdav-shares',
+      'file-shares': '/file-shares',
+      'my-verification': '/my-verification',
+      'verification-management': '/verification-management',
+      'multi-zone-task-detail': '/multi-zone-task-detail',
+      'payment-test': '/payment-test',
     };
     
     const route = routes[page] || '/';
@@ -266,6 +288,15 @@ function MainLayout() {
           <Route path="/task-queues" element={<TaskQueuesPage />} />
           <Route path="/compute-tasks" element={<ComputeTasksPage />} />
           <Route path="/task-monitoring/:taskId" element={<TaskMonitoringPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/dictionary-management" element={<DictionaryManagementPage />} />
+          <Route path="/webdav-shares" element={<WebDAVSharesPage />} />
+          <Route path="/file-shares" element={<FileSharesPage />} />
+          <Route path="/my-verification" element={<MyVerificationPage />} />
+          <Route path="/verification-management" element={<VerificationManagementPage />} />
+          <Route path="/multi-zone-task-detail" element={<MultiZoneTaskDetailPage />} />
+          <Route path="/payment-test" element={<PaymentTestPage />} />
+          <Route path="/flexible-pricing-management" element={<FlexiblePricingManagementPage />} />
         </Routes>
       </main>
     </div>

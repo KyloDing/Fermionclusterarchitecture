@@ -34,6 +34,7 @@ import {
 } from 'lucide-react';
 import CreateMenuDialog from '../dialogs/CreateMenuDialog';
 import { toast } from 'sonner';
+import React from 'react';
 
 // 菜单类型枚举
 export enum MenuType {
@@ -305,8 +306,8 @@ export default function MenuManagementPage() {
       }
 
       return (
-        <>
-          <TableRow key={menu.id} className="hover:bg-slate-50">
+        <React.Fragment key={menu.id}>
+          <TableRow className="hover:bg-slate-50">
             <TableCell>
               <div className="flex items-center gap-2" style={{ paddingLeft: `${level * 24}px` }}>
                 {hasChildren && (
@@ -408,7 +409,7 @@ export default function MenuManagementPage() {
             </TableCell>
           </TableRow>
           {isExpanded && hasChildren && renderMenuTree(menu.children!, level + 1)}
-        </>
+        </React.Fragment>
       );
     });
   };

@@ -19,17 +19,19 @@ import { Textarea } from '../ui/textarea';
 import { Progress } from '../ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { Alert, AlertDescription } from '../ui/alert';
-import { Plus, Search, PlayCircle, Pause, Square, Eye, MoreVertical, Info } from 'lucide-react';
+import { Plus, Search, PlayCircle, Pause, Square, Eye, MoreVertical, Info, Globe } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
+import { MultiZoneSchedulingDialog } from '../dialogs/MultiZoneSchedulingDialog';
 
 export default function TrainingJobsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isMultiZoneDialogOpen, setIsMultiZoneDialogOpen] = useState(false);
   const [filterStatus, setFilterStatus] = useState('all');
 
   const jobs = [
@@ -47,6 +49,7 @@ export default function TrainingJobsPage() {
       startTime: '2024-11-10 14:30',
       estimatedTime: '还需4小时',
       currentEpoch: '13/20',
+      zones: 'A可用区',
     },
     {
       id: 'job-2024-002',
@@ -62,6 +65,7 @@ export default function TrainingJobsPage() {
       startTime: '2024-11-10 10:00',
       estimatedTime: '已完成',
       currentEpoch: '100/100',
+      zones: 'B可用区',
     },
     {
       id: 'job-2024-003',
@@ -77,6 +81,7 @@ export default function TrainingJobsPage() {
       startTime: '等待中',
       estimatedTime: '预计12小时',
       currentEpoch: '0/30',
+      zones: 'A+B可用区',
     },
     {
       id: 'job-2024-004',
@@ -92,6 +97,7 @@ export default function TrainingJobsPage() {
       startTime: '2024-11-10 16:00',
       estimatedTime: '还需6小时',
       currentEpoch: '45/150',
+      zones: 'C可用区',
     },
     {
       id: 'job-2024-005',
@@ -107,6 +113,7 @@ export default function TrainingJobsPage() {
       startTime: '2024-11-09 20:00',
       estimatedTime: '失败',
       currentEpoch: '3/25',
+      zones: 'A可用区',
     },
   ];
 
@@ -156,7 +163,107 @@ export default function TrainingJobsPage() {
         <div>
           <h1 className="text-3xl mb-2">训练任务</h1>
           <p className="text-slate-600">批处理训练作业，用于大规模模型训练和实验管理</p>
-        </div></div>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setIsMultiZoneDialogOpen(true)}>
+            <Globe className="w-4 h-4 mr-2" />
+            跨可用区训练
+          </Button>
+          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="w-4 h-4 mr-2" />
+                创建训练任务
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>创建训练任务</DialogTitle>
+                <DialogDescription>配置并提交新的训练任务</DialogDescription>
+              </DialogHeader>
+              <div className="grid grid-cols-2 gap-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="job-name">任务名称</Label>
+                  <Input id="job-name" placeholder="例如: BERT中文预训练" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="framework">训练框架</Label>
+                  <Select>
+                    <SelectTrigger id="framework">
+                      <SelectValue placeholder="选择框架" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pytorch">PyTorch</SelectItem>
+                      <SelectItem value="tensorflow">TensorFlow</SelectItem>
+                      <SelectItem value="paddlepaddle">PaddlePaddle</SelectItem>
+                      <SelectItem value="mxnet">MXNet</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="dataset">数据集</Label>
+                  <Select>
+                    <SelectTrigger id="dataset">
+                      <SelectValue placeholder="选择数据集" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ds1">Chinese-Wikipedia-100G</SelectItem>
+                      <SelectItem value="ds2">ImageNet-1K</SelectItem>
+                      <SelectItem value="ds3">COCO-2017</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="model">模型架构</Label>
+                  <Input id="model" placeholder="例如: BERT-Base" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="gpu-count">GPU数量</Label>
+                  <Select>
+                    <SelectTrigger id="gpu-count">
+                      <SelectValue placeholder="选择GPU数量" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1">1卡</SelectItem>
+                      <SelectItem value="2">2卡</SelectItem>
+                      <SelectItem value="4">4卡</SelectItem>
+                      <SelectItem value="8">8卡</SelectItem>
+                      <SelectItem value="16">16卡</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="priority">优先级</Label>
+                  <Select>
+                    <SelectTrigger id="priority">
+                      <SelectValue placeholder="选择优先级" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="high">高</SelectItem>
+                      <SelectItem value="normal">中</SelectItem>
+                      <SelectItem value="low">低</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="col-span-2 space-y-2">
+                  <Label htmlFor="params">训练参数（JSON格式）</Label>
+                  <Textarea
+                    id="params"
+                    placeholder='{"learning_rate": 0.001, "batch_size": 32, "epochs": 100}'
+                    rows={4}
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+                  取消
+                </Button>
+                <Button onClick={() => setIsCreateDialogOpen(false)}>提交任务</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </div>
 
       {/* 使用说明 */}
       <Alert className="bg-gradient-to-r from-green-50 to-blue-50 border-2 border-green-200">
@@ -174,101 +281,15 @@ export default function TrainingJobsPage() {
         </AlertDescription>
       </Alert>
       
-      <div className="flex items-center justify-between">
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="w-4 h-4 mr-2" />
-              创建训练任务
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>创建训练任务</DialogTitle>
-              <DialogDescription>配置并提交新的训练任务</DialogDescription>
-            </DialogHeader>
-            <div className="grid grid-cols-2 gap-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="job-name">任务名称</Label>
-                <Input id="job-name" placeholder="例如: BERT中文预训练" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="framework">训练框架</Label>
-                <Select>
-                  <SelectTrigger id="framework">
-                    <SelectValue placeholder="选择框架" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="pytorch">PyTorch</SelectItem>
-                    <SelectItem value="tensorflow">TensorFlow</SelectItem>
-                    <SelectItem value="paddlepaddle">PaddlePaddle</SelectItem>
-                    <SelectItem value="mxnet">MXNet</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="dataset">数据集</Label>
-                <Select>
-                  <SelectTrigger id="dataset">
-                    <SelectValue placeholder="选择数据集" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ds1">Chinese-Wikipedia-100G</SelectItem>
-                    <SelectItem value="ds2">ImageNet-1K</SelectItem>
-                    <SelectItem value="ds3">COCO-2017</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="model">模型架构</Label>
-                <Input id="model" placeholder="例如: BERT-Base" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="gpu-count">GPU数量</Label>
-                <Select>
-                  <SelectTrigger id="gpu-count">
-                    <SelectValue placeholder="选择GPU数量" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1">1卡</SelectItem>
-                    <SelectItem value="2">2卡</SelectItem>
-                    <SelectItem value="4">4卡</SelectItem>
-                    <SelectItem value="8">8卡</SelectItem>
-                    <SelectItem value="16">16卡</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="priority">优先级</Label>
-                <Select>
-                  <SelectTrigger id="priority">
-                    <SelectValue placeholder="选择优先级" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="high">高</SelectItem>
-                    <SelectItem value="normal">中</SelectItem>
-                    <SelectItem value="low">低</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="col-span-2 space-y-2">
-                <Label htmlFor="params">训练参数（JSON格式）</Label>
-                <Textarea
-                  id="params"
-                  placeholder='{"learning_rate": 0.001, "batch_size": 32, "epochs": 100}'
-                  rows={4}
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
-                取消
-              </Button>
-              <Button onClick={() => setIsCreateDialogOpen(false)}>提交任务</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </div>
+      {/* 跨可用区调度对话框 */}
+      <MultiZoneSchedulingDialog
+        open={isMultiZoneDialogOpen}
+        onOpenChange={setIsMultiZoneDialogOpen}
+        mode="training"
+        onConfirm={(config) => {
+          console.log('创建跨可用区训练任务:', config);
+        }}
+      />
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">

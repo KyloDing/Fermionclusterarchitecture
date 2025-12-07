@@ -49,7 +49,6 @@
         '@': path.resolve(__dirname, './src'),
       },
     },
-    base: '/Fermionclusterarchitecture/',
     build: {
       target: 'esnext',
       outDir: 'build',

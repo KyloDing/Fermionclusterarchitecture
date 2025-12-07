@@ -54,6 +54,8 @@ import {
   Menu,
   Shield,
   Lock,
+  BookOpen,
+  Globe,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { usePermissions } from '../hooks/usePermissions';
@@ -117,7 +119,8 @@ export default function AppSidebar({ currentPage, onNavigate }: AppSidebarProps)
       items: [
         { id: 'storage-pools', label: '存储池', icon: HardDrive, requiredPermissions: [Permission.VIEW_STORAGE_POOLS] },
         { id: 'storage-volumes', label: '存储卷', icon: FolderOpen, requiredPermissions: [Permission.VIEW_STORAGE_VOLUMES] },
-        { id: 'smb-shares', label: 'SMB共享', icon: Share2, requiredPermissions: [Permission.VIEW_SMB_SHARES] },
+        { id: 'smb-shares', label: 'SMB共享', icon: Share2, description: '私有云部署', requiredPermissions: [Permission.VIEW_SMB_SHARES] },
+        { id: 'webdav-shares', label: 'WebDAV共享', icon: Globe, description: '公有云部署', requiredPermissions: [] },
         { id: 'storage-backends', label: '存储后端', icon: Server, requiredPermissions: [Permission.VIEW_STORAGE_BACKENDS] },
       ],
     },
@@ -136,6 +139,7 @@ export default function AppSidebar({ currentPage, onNavigate }: AppSidebarProps)
         { id: 'monitoring', label: '监控告警', icon: Activity, requiredPermissions: [Permission.VIEW_MONITORING] },
         { id: 'billing', label: '计费管理', icon: DollarSign, requiredPermissions: [Permission.VIEW_OWN_BILLING, Permission.VIEW_ALL_BILLING] },
         { id: 'government-vouchers', label: '政府算力券', icon: Ticket, requiredPermissions: [Permission.VIEW_OWN_VOUCHERS, Permission.VIEW_ALL_VOUCHERS] },
+        { id: 'dictionary-management', label: '字典管理', icon: BookOpen, requiredPermissions: [] },
         { id: 'audit-logs', label: '审计日志', icon: FileText, requiredPermissions: [Permission.VIEW_AUDIT_LOGS] },
       ],
     },
@@ -223,7 +227,7 @@ export default function AppSidebar({ currentPage, onNavigate }: AppSidebarProps)
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onNavigate('profile')}>
                 <User className="w-4 h-4 mr-2" />
                 个人资料
               </DropdownMenuItem>

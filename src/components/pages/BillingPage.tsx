@@ -46,6 +46,7 @@ import {
   ResourceCost,
   DailyCost,
 } from '../../services/billingService';
+import BalanceWarningDialog from '../dialogs/BalanceWarningDialog';
 import { toast } from 'sonner@2.0.3';
 
 interface BillingPageProps {
@@ -72,6 +73,9 @@ export default function BillingPage({
   const [dailyCosts, setDailyCosts] = useState<DailyCost[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPeriod, setSelectedPeriod] = useState<7 | 30 | 90>(30);
+  
+  // 优化4: 余额预警状态
+  const [showBalanceWarning, setShowBalanceWarning] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -88,10 +92,32 @@ export default function BillingPage({
       setSummary(summaryData);
       setResourceCosts(resourceData);
       setDailyCosts(dailyData);
+      
+      // 优化4: 检查余额预警
+      checkBalanceWarning(summaryData);
     } catch (error) {
       toast.error('加载数据失败');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // 优化4: 检查余额预警
+  const checkBalanceWarning = (summaryData: BillingSummary) => {
+    // 检查今日是否已提示
+    const hasWarned = localStorage.getItem('balanceWarningDate');
+    const today = new Date().toDateString();
+    
+    if (hasWarned === today) {
+      return; // 今日已提示，跳过
+    }
+    
+    // 计算预计可用天数
+    const estimatedDays = Math.floor(summaryData.accountBalance / summaryData.dailyAverage);
+    
+    // 7天内余额不足，显示预警
+    if (estimatedDays <= 7 && estimatedDays > 0) {
+      setShowBalanceWarning(true);
     }
   };
 
@@ -247,25 +273,14 @@ export default function BillingPage({
       </div>
 
       {/* 余额预警 */}
-      {summary.accountBalance < summary.estimatedCost && (
-        <Card className="mb-6 border-orange-200 bg-orange-50">
-          <CardContent className="p-4">
-            <div className="flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
-              <div className="flex-1">
-                <p className="font-medium text-orange-900 mb-1">余额不足预警</p>
-                <p className="text-sm text-orange-800">
-                  您的账户余额 ({formatCurrency(summary.accountBalance)}) 
-                  低于本月预估费用 ({formatCurrency(summary.estimatedCost)})，
-                  请及时充值以避免服务中断。
-                </p>
-              </div>
-              <Button size="sm" onClick={onNavigateToAccount}>
-                立即充值
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+      {showBalanceWarning && summary && (
+        <BalanceWarningDialog
+          open={showBalanceWarning}
+          onOpenChange={setShowBalanceWarning}
+          currentBalance={summary.accountBalance}
+          dailyAverage={summary.dailyAverage}
+          estimatedDays={Math.floor(summary.accountBalance / summary.dailyAverage)}
+        />
       )}
 
       {/* 费用趋势和分布 */}

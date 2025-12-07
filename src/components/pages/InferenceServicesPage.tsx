@@ -3,11 +3,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Alert, AlertDescription } from '../ui/alert';
-import { Rocket, Plus, Activity, Info, BarChart3, Zap, Clock } from 'lucide-react';
+import { Rocket, Plus, Activity, Info, BarChart3, Zap, Clock, Globe } from 'lucide-react';
 import { DeployInferenceDialog } from '../dialogs/DeployInferenceDialog';
+import { MultiZoneSchedulingDialog } from '../dialogs/MultiZoneSchedulingDialog';
 
 export default function InferenceServicesPage() {
   const [deployDialogOpen, setDeployDialogOpen] = useState(false);
+  const [multiZoneDialogOpen, setMultiZoneDialogOpen] = useState(false);
   const [selectedModel, setSelectedModel] = useState<any>(null);
   const services = [
     {
@@ -48,10 +50,16 @@ export default function InferenceServicesPage() {
           <h1 className="text-slate-900 mb-2">推理服务</h1>
           <p className="text-slate-600">在线API服务，用于生产环境的模型推理部署</p>
         </div>
-        <Button onClick={() => setDeployDialogOpen(true)}>
-          <Plus className="w-4 h-4 mr-2" />
-          部署推理服务
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setMultiZoneDialogOpen(true)}>
+            <Globe className="w-4 h-4 mr-2" />
+            跨可用区部署
+          </Button>
+          <Button onClick={() => setDeployDialogOpen(true)}>
+            <Plus className="w-4 h-4 mr-2" />
+            部署推理服务
+          </Button>
+        </div>
       </div>
 
       {/* 使用说明 */}
@@ -69,6 +77,16 @@ export default function InferenceServicesPage() {
           </div>
         </AlertDescription>
       </Alert>
+
+      {/* 跨可用区调度对话框 */}
+      <MultiZoneSchedulingDialog
+        open={multiZoneDialogOpen}
+        onOpenChange={setMultiZoneDialogOpen}
+        mode="inference"
+        onConfirm={(config) => {
+          console.log('创建跨可用区推理服务:', config);
+        }}
+      />
 
       {/* 统计卡片 */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
