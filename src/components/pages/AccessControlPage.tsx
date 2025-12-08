@@ -17,7 +17,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import UsersManagementPage from './UsersManagementPage';
 import RolesManagementPage from './RolesManagementPage';
-import UserGroupsPage from './UserGroupsPage';
+import UserGroupsPage from './UserGroupsPageWithHierarchy';
 import MenuManagementPage from './MenuManagementPage';
 
 export default function AccessControlPage() {

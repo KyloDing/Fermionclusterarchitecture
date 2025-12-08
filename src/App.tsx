@@ -1,3 +1,6 @@
+import AdvancedDiscountManagementPage from './components/pages/AdvancedDiscountManagementPage';
+import DiscountManagementPage from './components/pages/DiscountManagementPage';
+import ComputeUsageMonitoringPage from './components/pages/ComputeUsageMonitoringPageWithTable';
 import { BrowserRouter, Routes, Route, useLocation, useNavigate, Navigate } from 'react-router-dom';
 import { useAuth, AuthProvider } from './contexts/AuthContext';
 import { TaskProvider } from './contexts/TaskContext';
@@ -23,7 +26,7 @@ import SchedulingPage from './components/pages/SchedulingPage';
 import UsersPage from './components/pages/UsersPage';
 import UsersManagementPage from './components/pages/UsersManagementPage';
 import RolesManagementPage from './components/pages/RolesManagementPage';
-import UserGroupsPage from './components/pages/UserGroupsPage';
+import UserGroupsPage from './components/pages/UserGroupsPageWithHierarchy';
 import AccessControlPage from './components/pages/AccessControlPage';
 import MenuManagementPage from './components/pages/MenuManagementPage';
 import MonitoringPage from './components/pages/MonitoringPage';
@@ -34,7 +37,6 @@ import InvoiceManagementPage from './components/pages/InvoiceManagementPage';
 import OrdersPage from './components/pages/OrdersPage';
 import BillingConfigPage from './components/pages/BillingConfigPage';
 import PricingManagementPage from './components/pages/PricingManagementPage';
-import DiscountManagementPage from './components/pages/DiscountManagementPage';
 import BillingRulesPage from './components/pages/BillingRulesPage';
 import GovernmentVouchersPage from './components/pages/GovernmentVouchersPage';
 import AuditLogsPage from './components/pages/AuditLogsPage';
@@ -162,6 +164,7 @@ function MainLayout() {
     if (path === '/account-balance') return 'account-balance';
     if (path === '/invoice-management') return 'invoice-management';
     if (path === '/orders') return 'orders';
+    if (path === '/compute-usage-monitoring') return 'compute-usage-monitoring';
     if (path === '/government-vouchers') return 'government-vouchers';
     if (path === '/audit-logs') return 'audit-logs';
     if (path === '/menu-management') return 'menu-management';
@@ -206,6 +209,7 @@ function MainLayout() {
       'account-balance': '/account-balance',
       'invoice-management': '/invoice-management',
       'orders': '/orders',
+      'compute-usage-monitoring': '/compute-usage-monitoring',
       'government-vouchers': '/government-vouchers',
       'audit-logs': '/audit-logs',
       'menu-management': '/menu-management',
@@ -273,8 +277,9 @@ function MainLayout() {
           <Route path="/invoice-management" element={<InvoiceManagementPage />} />
           <Route path="/orders" element={<OrdersPage />} />
           <Route path="/billing-config" element={<BillingConfigPage />} />
-          <Route path="/pricing-management" element={<PricingManagementPage />} />
+          <Route path="/pricing-management" element={<FlexiblePricingManagementPage />} />
           <Route path="/discount-management" element={<DiscountManagementPage />} />
+          <Route path="/advanced-discount-management" element={<AdvancedDiscountManagementPage />} />
           <Route path="/billing-rules" element={<BillingRulesPage />} />
           <Route path="/government-vouchers" element={<GovernmentVouchersPage />} />
           <Route path="/audit-logs" element={<AuditLogsPage />} />
@@ -297,6 +302,7 @@ function MainLayout() {
           <Route path="/multi-zone-task-detail" element={<MultiZoneTaskDetailPage />} />
           <Route path="/payment-test" element={<PaymentTestPage />} />
           <Route path="/flexible-pricing-management" element={<FlexiblePricingManagementPage />} />
+          <Route path="/compute-usage-monitoring" element={<ComputeUsageMonitoringPage />} />
         </Routes>
       </main>
     </div>

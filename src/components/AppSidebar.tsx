@@ -56,6 +56,7 @@ import {
   Lock,
   BookOpen,
   Globe,
+  BarChart3,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { usePermissions } from '../hooks/usePermissions';
@@ -138,6 +139,7 @@ export default function AppSidebar({ currentPage, onNavigate }: AppSidebarProps)
         { id: 'users', label: '用户与权限', icon: Users, requiredPermissions: [Permission.VIEW_USERS] },
         { id: 'monitoring', label: '监控告警', icon: Activity, requiredPermissions: [Permission.VIEW_MONITORING] },
         { id: 'billing', label: '计费管理', icon: DollarSign, requiredPermissions: [Permission.VIEW_OWN_BILLING, Permission.VIEW_ALL_BILLING] },
+        { id: 'compute-usage-monitoring', label: '算力使用监控', icon: BarChart3, description: '使用报表与统计', requiredPermissions: [Permission.VIEW_ALL_BILLING] },
         { id: 'government-vouchers', label: '政府算力券', icon: Ticket, requiredPermissions: [Permission.VIEW_OWN_VOUCHERS, Permission.VIEW_ALL_VOUCHERS] },
         { id: 'dictionary-management', label: '字典管理', icon: BookOpen, requiredPermissions: [] },
         { id: 'audit-logs', label: '审计日志', icon: FileText, requiredPermissions: [Permission.VIEW_AUDIT_LOGS] },

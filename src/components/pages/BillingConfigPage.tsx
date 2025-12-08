@@ -1,3 +1,6 @@
+import FlexiblePricingManagementPage from './FlexiblePricingManagementPage';
+import AdvancedDiscountManagementPage from './AdvancedDiscountManagementPage';
+import BillingRulesPage from './BillingRulesPage';
 import { useState } from 'react';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
@@ -17,9 +20,6 @@ import {
   CheckCircle,
   BarChart3,
 } from 'lucide-react';
-import PricingManagementPage from './PricingManagementPage';
-import DiscountManagementPage from './DiscountManagementPage';
-import BillingRulesPage from './BillingRulesPage';
 
 // 计费配置中心 - 统一管理定价、折扣和计费规则
 export default function BillingConfigPage() {
@@ -38,8 +38,8 @@ export default function BillingConfigPage() {
           </Button>
         </div>
 
-        {activeTab === 'pricing' && <PricingManagementPage />}
-        {activeTab === 'discount' && <DiscountManagementPage />}
+        {activeTab === 'pricing' && <FlexiblePricingManagementPage />}
+        {activeTab === 'discount' && <AdvancedDiscountManagementPage />}
         {activeTab === 'rules' && <BillingRulesPage />}
       </div>
     );

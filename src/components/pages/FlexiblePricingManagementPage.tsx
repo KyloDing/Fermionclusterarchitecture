@@ -434,6 +434,8 @@ export default function FlexiblePricingManagementPage() {
         rule={editingRule}
         onRuleChange={setEditingRule}
         onSave={handleSave}
+        getScopeLabel={getScopeLabel}
+        getResourceTypeLabel={getResourceTypeLabel}
       />
 
       {/* 测试查询对话框 */}
@@ -600,6 +602,8 @@ interface PricingRuleEditDialogProps {
   rule: Partial<PricingRule> | null;
   onRuleChange: (rule: Partial<PricingRule>) => void;
   onSave: () => void;
+  getScopeLabel: (scope: PricingScope) => string;
+  getResourceTypeLabel: (type: ResourceType) => string;
 }
 
 function PricingRuleEditDialog({
@@ -608,6 +612,8 @@ function PricingRuleEditDialog({
   rule,
   onRuleChange,
   onSave,
+  getScopeLabel,
+  getResourceTypeLabel,
 }: PricingRuleEditDialogProps) {
   if (!rule) return null;
 
@@ -979,9 +985,4 @@ function PricingTestDialog({ open, onOpenChange }: PricingTestDialogProps) {
       </DialogContent>
     </Dialog>
   );
-
-  function getScopeLabel(scope: PricingScope): string {
-    const scopes = getPricingScopes();
-    return scopes.find((s) => s.value === scope)?.label || scope;
-  }
 }
