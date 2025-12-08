@@ -1,4 +1,7 @@
-import AdvancedDiscountManagementPage from './components/pages/AdvancedDiscountManagementPage';
+import DatasetListPage from './pages/DatasetListPage.tsx';
+import DatasetDetailPage from './pages/DatasetDetailPage.tsx';
+import TrainingTaskCreatePage from './pages/TrainingTaskCreatePageDistributed.tsx';
+import ModelsPage from './components/pages/ModelsPage';
 import DiscountManagementPage from './components/pages/DiscountManagementPage';
 import ComputeUsageMonitoringPage from './components/pages/ComputeUsageMonitoringPageWithTable';
 import { BrowserRouter, Routes, Route, useLocation, useNavigate, Navigate } from 'react-router-dom';
@@ -17,7 +20,7 @@ import InferenceServicesPage from './components/pages/InferenceServicesPage';
 import ImagesPage from './components/pages/ImagesPage';
 import DatasetListPage from './pages/DatasetListPage.tsx';
 import DatasetDetailPage from './pages/DatasetDetailPage.tsx';
-import TrainingTaskCreatePage from './pages/TrainingTaskCreatePage.tsx';
+import TrainingTaskCreatePage from './pages/TrainingTaskCreatePageDistributed.tsx';
 import ModelsPage from './components/pages/ModelsPage';
 import ModelEvaluationPage from './components/pages/ModelEvaluationPage';
 import PipelineOrchestrationPage from './components/pages/PipelineOrchestrationPage';
@@ -279,7 +282,6 @@ function MainLayout() {
           <Route path="/billing-config" element={<BillingConfigPage />} />
           <Route path="/pricing-management" element={<FlexiblePricingManagementPage />} />
           <Route path="/discount-management" element={<DiscountManagementPage />} />
-          <Route path="/advanced-discount-management" element={<AdvancedDiscountManagementPage />} />
           <Route path="/billing-rules" element={<BillingRulesPage />} />
           <Route path="/government-vouchers" element={<GovernmentVouchersPage />} />
           <Route path="/audit-logs" element={<AuditLogsPage />} />

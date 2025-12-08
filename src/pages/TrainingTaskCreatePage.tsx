@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ArrowLeft, Play, Container, Plus, Server, Zap, CheckCircle2, AlertCircle, Sparkles } from 'lucide-react';
+import { ArrowLeft, Play, Container, Plus, Server, Zap, CheckCircle2, AlertCircle, Sparkles, Search, Filter, SortAsc, X } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -16,6 +16,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../components/ui/select';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuCheckboxItem,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from '../components/ui/dropdown-menu';
 import { toast } from 'sonner@2.0.3';
 
 interface LocationState {
@@ -88,6 +98,76 @@ const mockDevEnvironments: DevEnvironment[] = [
     uptime: '12小时',
     tags: ['Transformers', 'LLM', 'CUDA 12.1'],
   },
+  {
+    id: 'env-004',
+    name: 'cv-experiment-env',
+    type: 'notebook',
+    status: 'running',
+    image: 'pytorch/pytorch:2.0.1-cuda11.8',
+    availabilityZone: '北京可用区B',
+    gpuType: 'V100',
+    gpuCount: 2,
+    cpuCores: 16,
+    memory: 128,
+    uptime: '1天5小时',
+    tags: ['PyTorch', 'OpenCV', 'Computer Vision'],
+  },
+  {
+    id: 'env-005',
+    name: 'nlp-research-lab',
+    type: 'custom',
+    status: 'running',
+    image: 'huggingface/transformers:4.30',
+    availabilityZone: '上海可用区A',
+    gpuType: 'A100',
+    gpuCount: 8,
+    cpuCores: 64,
+    memory: 512,
+    uptime: '3天8小时',
+    tags: ['Transformers', 'NLP', 'BERT'],
+  },
+  {
+    id: 'env-006',
+    name: 'quick-test-env',
+    type: 'notebook',
+    status: 'running',
+    image: 'python:3.11-slim',
+    availabilityZone: '北京可用区A',
+    gpuType: 'T4',
+    gpuCount: 1,
+    cpuCores: 4,
+    memory: 16,
+    uptime: '6小时',
+    tags: ['Python', 'Testing', 'Jupyter'],
+  },
+  {
+    id: 'env-007',
+    name: 'gaming-ai-env',
+    type: 'custom',
+    status: 'running',
+    image: 'nvidia/cuda:12.1.0-runtime',
+    availabilityZone: '深圳可用区A',
+    gpuType: 'RTX3090',
+    gpuCount: 2,
+    cpuCores: 16,
+    memory: 64,
+    uptime: '18小时',
+    tags: ['CUDA', 'RL', 'Gaming'],
+  },
+  {
+    id: 'env-008',
+    name: 'data-science-hub',
+    type: 'notebook',
+    status: 'running',
+    image: 'jupyter/datascience-notebook:latest',
+    availabilityZone: '上海可用区B',
+    gpuType: 'T4',
+    gpuCount: 1,
+    cpuCores: 8,
+    memory: 32,
+    uptime: '4天12小时',
+    tags: ['Jupyter', 'Pandas', 'NumPy'],
+  },
 ];
 
 // 可用区数据
@@ -138,6 +218,13 @@ export default function TrainingTaskCreatePage() {
   });
 
   const [submitting, setSubmitting] = useState(false);
+
+  // 筛选和排序状态
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterGpuType, setFilterGpuType] = useState<string[]>([]);
+  const [filterZone, setFilterZone] = useState<string[]>([]);
+  const [filterType, setFilterType] = useState<string[]>([]);
+  const [sortBy, setSortBy] = useState<'name' | 'gpuCount' | 'uptime' | 'none'>('none');
 
   // 过滤运行中的环境
   const runningEnvs = availableEnvs.filter(env => env.status === 'running');
